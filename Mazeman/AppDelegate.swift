@@ -1,9 +1,9 @@
 //
 //  AppDelegate.swift
-//  Mazeman
+//  MazeMan
 //
-//  Created by Aditya Vadrevu on 4/12/17.
-//  Copyright © 2017 Aditya Vadrevu. All rights reserved.
+//  Created by Aditya on 4/3/17.
+//  Copyright © 2017 Aditya. All rights reserved.
 //
 
 import UIKit
