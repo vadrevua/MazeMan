@@ -29,6 +29,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
     var triImage : SKSpriteNode!
     var pteroImage : SKSpriteNode!
     var stegImage : SKSpriteNode!
+    var fireBall: SKSpriteNode!
+    var newBlockImageNode : SKSpriteNode!
+    var block : SKSpriteNode!
+    var waterBlock : SKSpriteNode!
+    var secondWaterBlock : SKSpriteNode!
+    var hBlocks = [Bool](repeating: false, count: 14)
+    var wBlocks = [Bool](repeating: false, count: 16)
+    var blockCounter = 0
     
     override func didMove(to view: SKView) {
         
@@ -45,8 +53,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         displayTri()
         displayPtero()
         Timer.scheduledTimer(timeInterval: 15 , target: self, selector: #selector(displayRex), userInfo: nil, repeats: true)
+        Timer.scheduledTimer(timeInterval: 12, target: self, selector: #selector(displayFireBall), userInfo: nil, repeats: true)
         Timer.scheduledTimer(timeInterval: 18, target: self, selector: #selector(displayTri), userInfo: nil, repeats: true)
         Timer.scheduledTimer(timeInterval: 20, target: self, selector: #selector(displayPtero), userInfo: nil, repeats: true)
+        Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(addRandBlocks), userInfo: nil, repeats: true)
+        
         
         let swipeUp = UISwipeGestureRecognizer()
         swipeUp.direction = UISwipeGestureRecognizerDirection.up
@@ -69,7 +80,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         self.view?.addGestureRecognizer(swipeRight)
         
         let tap = UITapGestureRecognizer()
-//        tap.numberOfTouchesRequired = 1
+        //        tap.numberOfTouchesRequired = 1
         tap.addTarget(self, action: #selector(self.tapBlurButton(_:)))
         self.view?.addGestureRecognizer(tap)
         
@@ -87,17 +98,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         
         if let swipeRecognized = gesture as? UISwipeGestureRecognizer{
             if(swipeRecognized.direction == UISwipeGestureRecognizerDirection.up){
-                print("Swiped UP")
+                let move = SKAction.move(to: CGPoint(x: caveManNode.position.x, y: 1000), duration: 7)
+                self.caveManNode.run(move)
             }
             else if(swipeRecognized.direction == UISwipeGestureRecognizerDirection.down){
-                print("Swiped down")
+                let move = SKAction.move(to: CGPoint(x: caveManNode.position.x, y: 0), duration: 7)
+                self.caveManNode.run(move)
             }
             else if(swipeRecognized.direction == UISwipeGestureRecognizerDirection.left){
-                print("Swiped left")
+                let move = SKAction.move(to: CGPoint(x: 0, y: caveManNode.position.y), duration: 7)
+                self.caveManNode.run(move)
             }
             else if(swipeRecognized.direction == UISwipeGestureRecognizerDirection.right){
-                print("Swiped right")
-                caveManNode.physicsBody?.affectedByGravity = true
+                let move = SKAction.move(to: CGPoint(x: 1024, y: caveManNode.position.y), duration: 7)
+                self.caveManNode.run(move)
             }
             else{print("not working")}
         }
@@ -117,7 +131,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
             
             blockTop2.position = CGPoint(x: xval, y: 676)
             blockTop2.size = CGSize(width: 64, height: 64)
-            
+            blockTop2.physicsBody = SKPhysicsBody(rectangleOf: blockTop2.size)
+            blockTop2.physicsBody?.affectedByGravity = false
+            blockTop2.physicsBody?.isDynamic = false
             self.addChild(blockTop)
             self.addChild(blockTop2)
             blockTop.zPosition = -8.0
@@ -143,11 +159,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
     
     func addCaveMan(){
         caveManNode = SKSpriteNode(imageNamed: "caveman")
-        caveManNode.position = CGPoint(x: 37, y: 97);
-        caveManNode.size = CGSize(width: 75, height: 75);
+        caveManNode.position = CGPoint(x: 37, y: 97)
+        caveManNode.size = CGSize(width: 75, height: 75)
         self.addChild(caveManNode)
         caveManNode.physicsBody = SKPhysicsBody(rectangleOf: caveManNode.size)
         caveManNode.physicsBody?.affectedByGravity = false
+        caveManNode.physicsBody?.allowsRotation = false
     }
     
     func addGroundBlocks(){
@@ -265,7 +282,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         let move = SKAction.move(to: CGPoint(x: 5, y: Int(yVal)), duration: 6)
         let reverse = SKAction.scaleX(to: -1.0, duration: 0)
         let flipMove = SKAction.move(to: CGPoint(x:1100, y: Int(yVal)), duration: 6)
-        let sequence = SKAction.sequence([move,reverse,flipMove])
+        let remove = SKAction.removeFromParent()
+        let sequence = SKAction.sequence([move,reverse,flipMove,remove])
         self.tRexImage.run(sequence)
         
     }
@@ -299,7 +317,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
             let move = SKAction.move(to: CGPoint(x: 670, y: 630), duration: 7)
             let reverse = SKAction.scaleX(to: -1.0, duration: 0)
             let flipMove = SKAction.move(to: CGPoint(x:670, y: -34), duration: 7)
-            let sequence = SKAction.sequence([move,reverse,flipMove])
+            let remove = SKAction.removeFromParent()
+            let sequence = SKAction.sequence([move,reverse,flipMove,remove])
             self.triImage.run(sequence)
         }
         
@@ -318,6 +337,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         
     }
     
+    func displayFireBall(){
+        fireBall = SKSpriteNode(imageNamed: "fire")
+        fireBall.position = pteroImage.position
+        fireBall.size = CGSize(width: 64, height: 64)
+        fireBall.physicsBody = SKPhysicsBody(rectangleOf: fireBall.size)
+        fireBall.physicsBody?.isDynamic = false
+        fireBall.physicsBody?.affectedByGravity = false
+        fireBall.zPosition = 4.0
+        self.addChild(fireBall)
+        animateFire()
+        Timer.scheduledTimer(timeInterval: 12, target: self, selector: #selector(animateFire), userInfo: nil, repeats: true)
+    }
+    
+    
+    func animateFire(){
+        let drop = SKAction.move(to: CGPoint(x:fireBall.position.x, y: -5), duration: 5)
+        let remove = SKAction.removeFromParent()
+        let sequence = SKAction.sequence([drop, remove])
+        self.fireBall.run(sequence)
+    }
     
     func animatePtero(){
         let move = SKAction.move(to: CGPoint(x: 0, y: 650), duration: 10)
@@ -325,8 +364,62 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         let remove = SKAction.removeFromParent()
         let sequence = SKAction.sequence([move,flipMove,remove])
         self.pteroImage.run(sequence)
+        
     }
     
+    func addBrick(x: Int, y: Int){
+        newBlockImageNode = SKSpriteNode(imageNamed: "block")
+        newBlockImageNode.position = CGPoint(x: x, y: y)
+        newBlockImageNode.size = CGSize(width: 64, height: 64)
+        newBlockImageNode.physicsBody = SKPhysicsBody(rectangleOf: newBlockImageNode.size)
+        newBlockImageNode.physicsBody?.isDynamic = false
+        newBlockImageNode.physicsBody?.affectedByGravity = false
+        newBlockImageNode.zPosition = 4.0
+        self.addChild(newBlockImageNode)
+    }
+    
+    
+    func addRandBlocks(){
+        hBlocks = [Bool](repeating: false, count: 14)
+        wBlocks = [Bool](repeating: false, count: 16)
+        var randHNum = Int(arc4random_uniform(8))
+        var randWNum = Int(arc4random_uniform(16))
+        
+        
+        if(hBlocks[randHNum] == false && wBlocks[randWNum] == false && blockCounter < 15){
+            var xVal = (randWNum*64) + 30
+            var yVal = (randHNum*64) + 94
+            addBrick(x: xVal, y: yVal)
+            hBlocks[randHNum] = true
+            wBlocks[randWNum] = true
+            blockCounter += 1
+        }
+    }
+    
+//    func addBitMasks(){
+//        
+//        newBlockImageNode.physicsBody?.categoryBitMask = PhysicsCategory.newblock.rawValue
+//        newBlockImageNode.physicsBody?.contactTestBitMask = PhysicsCategory.caveman.rawValue
+//        newBlockImageNode.physicsBody?.collisionBitMask =  PhysicsCategory.caveman.rawValue
+//        
+//        caveManNode.physicsBody?.categoryBitMask = PhysicsCategory.caveman.rawValue
+//        caveManNode.physicsBody?.contactTestBitMask = PhysicsCategory.dino1.rawValue
+//        caveManNode.physicsBody?.collisionBitMask = PhysicsCategory.dino1.rawValue | PhysicsCategory.dino2.rawValue | PhysicsCategory.dino3.rawValue | PhysicsCategory.fireBall.rawValue | PhysicsCategory.newblock.rawValue
+//        
+//    }
+//
+//    enum PhysicsCategory : UInt32 {
+//        case caveman = 1
+//        case dino1 = 2
+//        case dino2 = 4
+//        case dino3 = 8
+//        case fireBall = 16
+//        case newblock = 32
+//        case groundBlock = 64
+//        case topblock = 128
+//    }
+
+
 }
 
 
