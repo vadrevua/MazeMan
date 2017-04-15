@@ -17,8 +17,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
     var label : SKLabelNode!
     var title : SKSpriteNode!
     var randNum = Int(arc4random_uniform(1366))
+    var onScreenStar : SKSpriteNode!
     var star : SKSpriteNode!
     var starLabel : SKLabelNode!
+    var onScreenRock : SKSpriteNode!
     var rock : SKSpriteNode!
     var rockLabel : SKLabelNode!
     var heart : SKSpriteNode!
@@ -34,11 +36,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
     var block : SKSpriteNode!
     var waterBlock : SKSpriteNode!
     var secondWaterBlock : SKSpriteNode!
+    var foodImage : SKSpriteNode!
     var hBlocks = [Bool](repeating: false, count: 14)
     var wBlocks = [Bool](repeating: false, count: 16)
     var blockCounter = 0
+    var numRocks = 10
+    var numHearts = 3
+    var batteryNum = 100
+    var starVisible = false
+    var foodVisible = false
     
     override func didMove(to view: SKView) {
+        
+        self.physicsWorld.contactDelegate = self
         
         let background = SKSpriteNode(imageNamed: "bg")
         background.position = CGPoint(x: size.width/2, y: size.height/2)
@@ -48,16 +58,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         addTopBricks()
         addGroundBlocks()
         addCaveMan()
-        
         displayRex()
         displayTri()
         displayPtero()
+        displayFireBall()
+        addRandBlocks()
+        displayStar()
+        displayFood()
         Timer.scheduledTimer(timeInterval: 15 , target: self, selector: #selector(displayRex), userInfo: nil, repeats: true)
         Timer.scheduledTimer(timeInterval: 12, target: self, selector: #selector(displayFireBall), userInfo: nil, repeats: true)
         Timer.scheduledTimer(timeInterval: 18, target: self, selector: #selector(displayTri), userInfo: nil, repeats: true)
         Timer.scheduledTimer(timeInterval: 20, target: self, selector: #selector(displayPtero), userInfo: nil, repeats: true)
         Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(addRandBlocks), userInfo: nil, repeats: true)
-        
+        Timer.scheduledTimer(timeInterval: 25, target: self, selector: #selector(gravityMode), userInfo: nil, repeats: true)
+        Timer.scheduledTimer(timeInterval: 30, target: self, selector: #selector(addRocks), userInfo: nil, repeats: true)
+        Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(subEnergy), userInfo: nil, repeats: true)
         
         let swipeUp = UISwipeGestureRecognizer()
         swipeUp.direction = UISwipeGestureRecognizerDirection.up
@@ -85,38 +100,81 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         self.view?.addGestureRecognizer(tap)
         
     }
+    func gravityMode(){
+        label.text = "Gravity is coming soon"
+        label.fontColor = SKColor.red
+        Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(caveGravityON), userInfo: nil, repeats: false)
+        
+    }
+    func caveGravityON(){
+        caveManNode.physicsBody?.affectedByGravity = true
+        label.text = "Gravity ON"
+        Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(caveGravityOFF), userInfo: nil, repeats: false)
+    }
+    func caveGravityOFF(){
+        caveManNode.physicsBody?.affectedByGravity = false
+        label.text = "Gravity Off"
+        label.fontColor = SKColor.black
+    }
     
     func tapBlurButton(_ sender: UITapGestureRecognizer) {
-        
+        var touchLocation: CGPoint = sender.location(in: sender.view)
+        touchLocation = self.convertPoint(fromView: touchLocation)
+        throwRock(touch: touchLocation)
         print("Tapped")
+    }
+    
+    func didBegin(_ contact: SKPhysicsContact) {
+        
+        if contact.bodyA.categoryBitMask == PhysicsCategory.caveman || contact.bodyB.categoryBitMask == PhysicsCategory.newblock {
+            print("caveman hit wall")
+            caveManNode.removeAllActions()
+        }
+        else if contact.bodyA.categoryBitMask == PhysicsCategory.newblock || contact.bodyB.categoryBitMask == PhysicsCategory.caveman {
+            print("Wall hit Caveman")
+            caveManNode.removeAllActions()
+        }
+        else{
+            print("something else happened")
+        }
     }
     
     func handleSwipe(gesture: UISwipeGestureRecognizer){
         
         //caveManNode.physicsBody?.affectedByGravity = true
-        
+        var swipeUp = (Int(caveManNode.position.y) - 656) / 100
+        var swipeDown = (Int(caveManNode.position.y) - 64) / 100
+        var swipeLeft = (32 - Int(caveManNode.position.x)) / 100
+        var swipeRight = (992 - Int(caveManNode.position.x)) / 100
         
         if let swipeRecognized = gesture as? UISwipeGestureRecognizer{
             if(swipeRecognized.direction == UISwipeGestureRecognizerDirection.up){
-                let move = SKAction.move(to: CGPoint(x: caveManNode.position.x, y: 1000), duration: 7)
+                let move = SKAction.move(to: CGPoint(x: caveManNode.position.x, y: 656), duration: 7)
                 self.caveManNode.run(move)
             }
             else if(swipeRecognized.direction == UISwipeGestureRecognizerDirection.down){
-                let move = SKAction.move(to: CGPoint(x: caveManNode.position.x, y: 0), duration: 7)
+                let move = SKAction.move(to: CGPoint(x: caveManNode.position.x, y: 64), duration: 7)
                 self.caveManNode.run(move)
             }
             else if(swipeRecognized.direction == UISwipeGestureRecognizerDirection.left){
-                let move = SKAction.move(to: CGPoint(x: 0, y: caveManNode.position.y), duration: 7)
+                let move = SKAction.move(to: CGPoint(x: 32, y: caveManNode.position.y), duration: 7)
                 self.caveManNode.run(move)
             }
             else if(swipeRecognized.direction == UISwipeGestureRecognizerDirection.right){
-                let move = SKAction.move(to: CGPoint(x: 1024, y: caveManNode.position.y), duration: 7)
+                let move = SKAction.move(to: CGPoint(x: 992, y: caveManNode.position.y), duration: 7)
                 self.caveManNode.run(move)
             }
             else{print("not working")}
         }
     }
     
+    func addRockAudio(){
+        let a = SKAudioNode(fileNamed: "rock.wav")
+        a.autoplayLooped = false
+        addChild(a)
+        a.run(SKAction.playSoundFileNamed("rock.wav", waitForCompletion: false))
+        
+    }
     
     func addTopBricks(){
         for i in 0 ..< 17 {
@@ -157,23 +215,67 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         title.addChild(label)
     }
     
-    func addCaveMan(){
-        caveManNode = SKSpriteNode(imageNamed: "caveman")
-        caveManNode.position = CGPoint(x: 37, y: 97)
-        caveManNode.size = CGSize(width: 75, height: 75)
-        self.addChild(caveManNode)
-        caveManNode.physicsBody = SKPhysicsBody(rectangleOf: caveManNode.size)
-        caveManNode.physicsBody?.affectedByGravity = false
-        caveManNode.physicsBody?.allowsRotation = false
+    func displayStar(){
+        var randHNum = Int(arc4random_uniform(8))
+        var randWNum = Int(arc4random_uniform(16))
+        
+        while(starVisible == false){
+            if(hBlocks[randHNum] == false && wBlocks[randWNum] == false){
+                var xVal = (randWNum*64) + 30
+                var yVal = (randHNum*64) + 94
+                addStar(x: xVal, y: yVal)
+                hBlocks[randHNum] = true
+                wBlocks[randWNum] = true
+                starVisible = true
+            }
+        }
+    }
+    
+    func addStar(x: Int, y: Int){
+        onScreenStar = SKSpriteNode(imageNamed: "star")
+        onScreenStar.position = CGPoint(x: x, y: y)
+        onScreenStar.size = CGSize(width: 64, height: 64)
+        onScreenStar.physicsBody = SKPhysicsBody(rectangleOf: onScreenStar.size)
+        addStarBitMasks()
+        onScreenStar.physicsBody?.isDynamic = false
+        onScreenStar.physicsBody?.affectedByGravity = false
+        onScreenStar.zPosition = 3.0
+        self.addChild(onScreenStar)
+    }
+    func displayFood(){
+        var randHNum = Int(arc4random_uniform(8))
+        var randWNum = Int(arc4random_uniform(16))
+        
+        while(foodVisible == false){
+            if(hBlocks[randHNum] == false && wBlocks[randWNum] == false){
+                var xVal = (randWNum*64) + 30
+                var yVal = (randHNum*64) + 94
+                addFood(x: xVal, y: yVal)
+                hBlocks[randHNum] = true
+                wBlocks[randWNum] = true
+                foodVisible = true
+            }
+        }
+    }
+    
+    func addFood(x: Int, y: Int){
+        foodImage = SKSpriteNode(imageNamed: "food")
+        foodImage.position = CGPoint(x: x, y: y)
+        foodImage.size = CGSize(width: 64, height: 64)
+        foodImage.physicsBody = SKPhysicsBody(rectangleOf: foodImage.size)
+        foodImage.physicsBody?.isDynamic = false
+        foodImage.physicsBody?.affectedByGravity = false
+        foodImage.zPosition = 3.0
+        self.addChild(foodImage)
     }
     
     func addGroundBlocks(){
         
         for i in 0 ..< 17 {
             
-            let block = SKSpriteNode(imageNamed: "block")
-            let waterBlock = SKSpriteNode(imageNamed: "water")
-            let secondWaterBlock = SKSpriteNode(imageNamed: "water")
+            block = SKSpriteNode(imageNamed: "block")
+            waterBlock = SKSpriteNode(imageNamed: "water")
+            secondWaterBlock = SKSpriteNode(imageNamed: "water")
             
             var xval = 30 + (i*64)
             
@@ -182,6 +284,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
                 waterBlock.size = CGSize(width: 64, height: 64)
                 secondWaterBlock.position = CGPoint(x:670, y:33)
                 secondWaterBlock.size = CGSize(width: 64, height: 64)
+                waterBlock.physicsBody = SKPhysicsBody(rectangleOf: waterBlock.size)
+                secondWaterBlock.physicsBody = SKPhysicsBody(rectangleOf: secondWaterBlock.size)
                 waterBlock.physicsBody?.isDynamic = false
                 waterBlock.physicsBody?.affectedByGravity = false
                 secondWaterBlock.physicsBody?.isDynamic = false
@@ -222,7 +326,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         self.addChild(rock)
         
         rockLabel = SKLabelNode(fontNamed: "Chalkduster")
-        rockLabel.text = "10"
+        rockLabel.text = String(numRocks)
         rockLabel.fontColor = SKColor.black
         rockLabel.horizontalAlignmentMode  = .center
         rockLabel.verticalAlignmentMode = .center
@@ -236,7 +340,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         self.addChild(heart)
         
         heartLabel = SKLabelNode(fontNamed: "Chalkduster")
-        heartLabel.text = "3"
+        heartLabel.text = String(numHearts)
         heartLabel.fontColor = SKColor.black
         heartLabel.horizontalAlignmentMode  = .center
         heartLabel.verticalAlignmentMode = .center
@@ -250,7 +354,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         self.addChild(battery)
         
         batteryLabel = SKLabelNode(fontNamed: "Chalkduster")
-        batteryLabel.text = "100"
+        batteryLabel.text = String(batteryNum)
         batteryLabel.fontColor = SKColor.black
         batteryLabel.horizontalAlignmentMode  = .center
         batteryLabel.verticalAlignmentMode = .center
@@ -258,9 +362,72 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         batteryLabel.zPosition = 3.0
     }
     
+    func addBrick(x: Int, y: Int){
+        newBlockImageNode = SKSpriteNode(imageNamed: "block")
+        newBlockImageNode.position = CGPoint(x: x, y: y)
+        newBlockImageNode.size = CGSize(width: 64, height: 64)
+        newBlockImageNode.physicsBody = SKPhysicsBody(rectangleOf: newBlockImageNode.size)
+        addNewBlockManBitMasks()
+        newBlockImageNode.physicsBody?.isDynamic = false
+        newBlockImageNode.physicsBody?.affectedByGravity = false
+        newBlockImageNode.zPosition = 3.0
+        self.addChild(newBlockImageNode)
+    }
     
     
-    
+    func addRandBlocks(){
+        var randHNum = Int(arc4random_uniform(8))
+        var randWNum = Int(arc4random_uniform(16))
+        var truther = false
+        
+        while(truther == false && blockCounter < 15){
+            if(hBlocks[randHNum] == false && wBlocks[randWNum] == false && blockCounter < 15){
+                var xVal = (randWNum*64) + 30
+                var yVal = (randHNum*64) + 94
+                addBrick(x: xVal, y: yVal)
+                hBlocks[randHNum] = true
+                wBlocks[randWNum] = true
+                blockCounter += 1
+                truther = true
+            }
+            else if(hBlocks[randHNum] == false && wBlocks[randWNum] == true && blockCounter < 15){
+                var xVal = (randWNum*64) + 30
+                var yVal = (randHNum*64) + 94
+                addBrick(x: xVal, y: yVal)
+                hBlocks[randHNum] = true
+                wBlocks[randWNum] = true
+                blockCounter += 1
+                truther = true
+            }
+            else if(hBlocks[randHNum] == true && wBlocks[randWNum] == false && blockCounter < 15){
+                var xVal = (randWNum*64) + 30
+                var yVal = (randHNum*64) + 94
+                addBrick(x: xVal, y: yVal)
+                hBlocks[randHNum] = true
+                wBlocks[randWNum] = true
+                blockCounter += 1
+                truther = true
+            }
+
+            else{
+                randHNum = Int(arc4random_uniform(8))
+                randWNum = Int(arc4random_uniform(16))
+            }
+        }
+    }
+    func addCaveMan(){
+        caveManNode = SKSpriteNode(imageNamed: "caveman")
+        caveManNode.position = CGPoint(x: 37, y: 97)
+        caveManNode.size = CGSize(width: 75, height: 75)
+        addCaveManBitMasks()
+        self.addChild(caveManNode)
+        caveManNode.zPosition = 3.0
+        caveManNode.physicsBody = SKPhysicsBody(rectangleOf: caveManNode.size)
+        caveManNode.physicsBody?.isDynamic = true
+        caveManNode.physicsBody?.affectedByGravity = false
+        caveManNode.physicsBody?.allowsRotation = false
+        
+    }
     
     func displayRex(){
         tRexImage = SKSpriteNode(imageNamed: "dino2")
@@ -268,9 +435,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         tRexImage.position = CGPoint(x: 1100, y: Int(randNum))
         tRexImage.size = CGSize(width: 64, height: 64)
         tRexImage.physicsBody = SKPhysicsBody(rectangleOf: tRexImage.size)
+        addRexBitMasks()
         tRexImage.physicsBody?.isDynamic = false
         tRexImage.physicsBody?.affectedByGravity = false
-        tRexImage.zPosition = 2.0
+        tRexImage.zPosition = 3.0
         self.addChild(tRexImage)
         animateRex(yVal: randNum)
         
@@ -294,10 +462,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         if(triRandNum == 1){triImage.position = CGPoint(x: 350, y: -34)}
         if(triRandNum == 2){triImage.position = CGPoint(x: 670, y: -34)}
         triImage.size = CGSize(width: 64, height: 64)
+        addTriBitMasks()
         triImage.physicsBody = SKPhysicsBody(rectangleOf: tRexImage.size)
         triImage.physicsBody?.isDynamic = false
         triImage.physicsBody?.affectedByGravity = false
         triImage.zPosition = 3.0
+        
         self.addChild(triImage)
         animateTri(yVal: triRandNum)
         
@@ -332,6 +502,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         pteroImage.physicsBody?.isDynamic = false
         pteroImage.physicsBody?.affectedByGravity = false
         pteroImage.zPosition = 3.0
+        
         self.addChild(pteroImage)
         animatePtero()
         
@@ -342,9 +513,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         fireBall.position = pteroImage.position
         fireBall.size = CGSize(width: 64, height: 64)
         fireBall.physicsBody = SKPhysicsBody(rectangleOf: fireBall.size)
+        addFireBallBitMasks()
         fireBall.physicsBody?.isDynamic = false
         fireBall.physicsBody?.affectedByGravity = false
-        fireBall.zPosition = 4.0
+        fireBall.zPosition = 3.0
+        
         self.addChild(fireBall)
         animateFire()
         Timer.scheduledTimer(timeInterval: 12, target: self, selector: #selector(animateFire), userInfo: nil, repeats: true)
@@ -367,59 +540,134 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         
     }
     
-    func addBrick(x: Int, y: Int){
-        newBlockImageNode = SKSpriteNode(imageNamed: "block")
-        newBlockImageNode.position = CGPoint(x: x, y: y)
-        newBlockImageNode.size = CGSize(width: 64, height: 64)
-        newBlockImageNode.physicsBody = SKPhysicsBody(rectangleOf: newBlockImageNode.size)
-        newBlockImageNode.physicsBody?.isDynamic = false
-        newBlockImageNode.physicsBody?.affectedByGravity = false
-        newBlockImageNode.zPosition = 4.0
-        self.addChild(newBlockImageNode)
-    }
-    
-    
-    func addRandBlocks(){
-        hBlocks = [Bool](repeating: false, count: 14)
-        wBlocks = [Bool](repeating: false, count: 16)
-        var randHNum = Int(arc4random_uniform(8))
-        var randWNum = Int(arc4random_uniform(16))
-        
-        
-        if(hBlocks[randHNum] == false && wBlocks[randWNum] == false && blockCounter < 15){
-            var xVal = (randWNum*64) + 30
-            var yVal = (randHNum*64) + 94
-            addBrick(x: xVal, y: yVal)
-            hBlocks[randHNum] = true
-            wBlocks[randWNum] = true
-            blockCounter += 1
+    func subEnergy(){
+        if(batteryNum > 0 && numHearts > 0){
+            batteryNum -= 1
+            batteryLabel.text = String(batteryNum)
+            if(batteryNum == 0){
+                numHearts -= 1
+                batteryNum = 100
+                batteryLabel.text = String(batteryNum)
+                heartLabel.text = String(numHearts)
+            }
+            if(numHearts == 0){
+                gameOver()
+            }
         }
     }
     
-//    func addBitMasks(){
-//        
-//        newBlockImageNode.physicsBody?.categoryBitMask = PhysicsCategory.newblock.rawValue
-//        newBlockImageNode.physicsBody?.contactTestBitMask = PhysicsCategory.caveman.rawValue
-//        newBlockImageNode.physicsBody?.collisionBitMask =  PhysicsCategory.caveman.rawValue
-//        
-//        caveManNode.physicsBody?.categoryBitMask = PhysicsCategory.caveman.rawValue
-//        caveManNode.physicsBody?.contactTestBitMask = PhysicsCategory.dino1.rawValue
-//        caveManNode.physicsBody?.collisionBitMask = PhysicsCategory.dino1.rawValue | PhysicsCategory.dino2.rawValue | PhysicsCategory.dino3.rawValue | PhysicsCategory.fireBall.rawValue | PhysicsCategory.newblock.rawValue
-//        
-//    }
-//
-//    enum PhysicsCategory : UInt32 {
-//        case caveman = 1
-//        case dino1 = 2
-//        case dino2 = 4
-//        case dino3 = 8
-//        case fireBall = 16
-//        case newblock = 32
-//        case groundBlock = 64
-//        case topblock = 128
-//    }
-
-
+    func gameOver(){
+        let flipTransition = SKTransition.doorsCloseHorizontal(withDuration: 1.0)
+        let gameOverScene = GameOverScene(size: self.size)
+        gameOverScene.scaleMode = .aspectFill
+        
+        self.view?.presentScene(gameOverScene, transition: flipTransition)
+        
+    }
+    
+    func throwRock(touch: CGPoint){
+        if(numRocks > 0){
+            //throw rock
+            numRocks -= 1
+            rockLabel.text = String(numRocks)
+            addRockAudio()
+            dispRock(touch: touch)
+        }
+            
+        else{
+            label.text = "Not enough rocks to throw"
+            label.fontColor = SKColor.brown
+        }
+    }
+    
+    func addRocks(){
+        if(numRocks >= 20){
+            numRocks = 20
+            rockLabel.text = String(numRocks)
+            label.text = "Now have 20 Rocks"
+            label.fontColor = SKColor.brown
+        }
+            
+        else if(numRocks < 20 && numRocks >= 10){
+            numRocks = 20
+            rockLabel.text = String(numRocks)
+            label.text = "Now have 20 Rocks"
+            label.fontColor = SKColor.brown
+        }
+        else{
+            numRocks += 10
+            rockLabel.text = String(numRocks)
+            label.text = "Gained 10 Rocks"
+            label.fontColor = SKColor.brown
+        }
+    }
+    func dispRock(touch: CGPoint){
+        onScreenRock = SKSpriteNode(imageNamed: "rock")
+        onScreenRock.position = caveManNode.position
+        onScreenRock.size = CGSize(width: 32, height: 32)
+        onScreenRock.physicsBody = SKPhysicsBody(rectangleOf: onScreenRock.size)
+        //        addFireBallBitMasks()
+        onScreenRock.physicsBody?.isDynamic = false
+        onScreenRock.physicsBody?.affectedByGravity = false
+        onScreenRock.zPosition = 3.0
+        self.addChild(onScreenRock)
+        
+        let move = SKAction.move(to: touch, duration: 2)
+        onScreenRock.run(move)
+        
+    }
+    
+    func addCaveManBitMasks(){
+        
+        caveManNode.physicsBody?.categoryBitMask = PhysicsCategory.caveman
+        caveManNode.physicsBody?.contactTestBitMask = PhysicsCategory.tri | PhysicsCategory.trex | PhysicsCategory.newblock |  PhysicsCategory.fireBall | PhysicsCategory.waterblock | PhysicsCategory.secondwaterblock | PhysicsCategory.star
+        caveManNode.physicsBody?.collisionBitMask = PhysicsCategory.newblock
+    }
+    func addTriBitMasks(){
+        
+        triImage.physicsBody?.categoryBitMask = PhysicsCategory.tri
+        triImage.physicsBody?.contactTestBitMask =  PhysicsCategory.caveman
+        triImage.physicsBody?.collisionBitMask = 0
+    }
+    func addRexBitMasks(){
+        tRexImage.physicsBody?.categoryBitMask = PhysicsCategory.trex
+        tRexImage.physicsBody?.contactTestBitMask =  PhysicsCategory.caveman
+        tRexImage.physicsBody?.collisionBitMask = 0
+    }
+    func addNewBlockManBitMasks(){
+        newBlockImageNode.physicsBody?.categoryBitMask = PhysicsCategory.newblock
+        newBlockImageNode.physicsBody?.contactTestBitMask = PhysicsCategory.caveman | PhysicsCategory.steg
+        newBlockImageNode.physicsBody?.collisionBitMask = PhysicsCategory.caveman
+    }
+    func addFireBallBitMasks(){
+        fireBall.physicsBody?.categoryBitMask = PhysicsCategory.fireBall
+        fireBall.physicsBody?.contactTestBitMask = PhysicsCategory.caveman
+        fireBall.physicsBody?.collisionBitMask = 0
+    }
+    func addStarBitMasks(){
+        onScreenStar.physicsBody?.categoryBitMask = PhysicsCategory.star
+        onScreenStar.physicsBody?.contactTestBitMask = PhysicsCategory.caveman
+        onScreenStar.physicsBody?.collisionBitMask = 0
+    }
+    
+    
+    struct PhysicsCategory {
+        
+        static let caveman: UInt32 = 0x1 << 0
+        static let tri: UInt32 = 0x1 << 1
+        static let trex: UInt32 = 0x1 << 2
+        static let fireBall: UInt32 = 0x1 << 3
+        static let steg: UInt32 = 0x1 << 4
+        static let ptero: UInt32 = 0x1 << 5
+        static let waterblock: UInt32 = 0x1 << 6
+        static let secondwaterblock: UInt32 = 0x1 << 7
+        static let newblock: UInt32 = 0x1 << 8
+        static let star: UInt32 = 0x1 << 9
+        static let food: UInt32 = 0x1 << 10
+        
+    }
+    
+    
 }
 
 

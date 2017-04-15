@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FE2184441EA1544C008EA299 /* GameOverScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2184431EA1544C008EA299 /* GameOverScene.swift */; };
+		FEA5391C1EA03AD100A160F5 /* smb_coin.wav in Resources */ = {isa = PBXBuildFile; fileRef = FEA5391B1EA03AD100A160F5 /* smb_coin.wav */; };
+		FEA5391E1EA03E3200A160F5 /* hit.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FEA5391D1EA03E3200A160F5 /* hit.mp3 */; };
+		FEA539201EA03E8E00A160F5 /* die.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FEA5391F1EA03E8E00A160F5 /* die.mp3 */; };
+		FEA539221EA03E9300A160F5 /* food.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FEA539211EA03E9300A160F5 /* food.mp3 */; };
+		FEA539241EA03E9700A160F5 /* hitDino.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FEA539231EA03E9700A160F5 /* hitDino.mp3 */; };
+		FEA539261EA03EAD00A160F5 /* rock.wav in Resources */ = {isa = PBXBuildFile; fileRef = FEA539251EA03EAD00A160F5 /* rock.wav */; };
 		FECF88CC1E9EBD1300444B54 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF88CB1E9EBD1300444B54 /* AppDelegate.swift */; };
 		FECF88D21E9EBD1300444B54 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF88D11E9EBD1300444B54 /* GameScene.swift */; };
 		FECF88D41E9EBD1300444B54 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF88D31E9EBD1300444B54 /* GameViewController.swift */; };
@@ -16,6 +23,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		FE2184431EA1544C008EA299 /* GameOverScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameOverScene.swift; sourceTree = "<group>"; };
+		FEA5391B1EA03AD100A160F5 /* smb_coin.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = smb_coin.wav; sourceTree = "<group>"; };
+		FEA5391D1EA03E3200A160F5 /* hit.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = hit.mp3; sourceTree = "<group>"; };
+		FEA5391F1EA03E8E00A160F5 /* die.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = die.mp3; sourceTree = "<group>"; };
+		FEA539211EA03E9300A160F5 /* food.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = food.mp3; sourceTree = "<group>"; };
+		FEA539231EA03E9700A160F5 /* hitDino.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = hitDino.mp3; sourceTree = "<group>"; };
+		FEA539251EA03EAD00A160F5 /* rock.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = rock.wav; sourceTree = "<group>"; };
 		FECF88C81E9EBD1300444B54 /* Mazeman.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mazeman.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FECF88CB1E9EBD1300444B54 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FECF88D11E9EBD1300444B54 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
@@ -59,8 +73,15 @@
 				FECF88CB1E9EBD1300444B54 /* AppDelegate.swift */,
 				FECF88D11E9EBD1300444B54 /* GameScene.swift */,
 				FECF88D31E9EBD1300444B54 /* GameViewController.swift */,
+				FE2184431EA1544C008EA299 /* GameOverScene.swift */,
 				FECF88D51E9EBD1300444B54 /* Main.storyboard */,
 				FECF88D81E9EBD1300444B54 /* Assets.xcassets */,
+				FEA539251EA03EAD00A160F5 /* rock.wav */,
+				FEA5391D1EA03E3200A160F5 /* hit.mp3 */,
+				FEA5391F1EA03E8E00A160F5 /* die.mp3 */,
+				FEA539231EA03E9700A160F5 /* hitDino.mp3 */,
+				FEA539211EA03E9300A160F5 /* food.mp3 */,
+				FEA5391B1EA03AD100A160F5 /* smb_coin.wav */,
 				FECF88DA1E9EBD1300444B54 /* LaunchScreen.storyboard */,
 				FECF88DD1E9EBD1300444B54 /* Info.plist */,
 			);
@@ -99,6 +120,7 @@
 				TargetAttributes = {
 					FECF88C71E9EBD1300444B54 = {
 						CreatedOnToolsVersion = 8.2.1;
+						DevelopmentTeam = 8B4QBLLSCD;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -127,8 +149,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				FECF88D71E9EBD1300444B54 /* Main.storyboard in Resources */,
+				FEA5391C1EA03AD100A160F5 /* smb_coin.wav in Resources */,
+				FEA539201EA03E8E00A160F5 /* die.mp3 in Resources */,
 				FECF88D91E9EBD1300444B54 /* Assets.xcassets in Resources */,
 				FECF88DC1E9EBD1300444B54 /* LaunchScreen.storyboard in Resources */,
+				FEA539221EA03E9300A160F5 /* food.mp3 in Resources */,
+				FEA539261EA03EAD00A160F5 /* rock.wav in Resources */,
+				FEA539241EA03E9700A160F5 /* hitDino.mp3 in Resources */,
+				FEA5391E1EA03E3200A160F5 /* hit.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -141,6 +169,7 @@
 			files = (
 				FECF88D21E9EBD1300444B54 /* GameScene.swift in Sources */,
 				FECF88D41E9EBD1300444B54 /* GameViewController.swift in Sources */,
+				FE2184441EA1544C008EA299 /* GameOverScene.swift in Sources */,
 				FECF88CC1E9EBD1300444B54 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -264,6 +293,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 8B4QBLLSCD;
 				INFOPLIST_FILE = Mazeman/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = vadrevua.Mazeman;
@@ -276,6 +306,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 8B4QBLLSCD;
 				INFOPLIST_FILE = Mazeman/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = vadrevua.Mazeman;
@@ -303,6 +334,7 @@
 				FECF88E21E9EBD1300444B54 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
